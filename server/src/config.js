@@ -89,6 +89,22 @@ config.google = {
   enabled: Boolean(env.GOOGLE_ISSUER_ID && serviceAccount?.client_email && serviceAccount?.private_key),
 };
 
+/**
+ * Qué falta para activar cada plataforma (solo nombres, nunca valores),
+ * para diagnosticar el hosting desde /api/health.
+ */
+const missingEnv = (...names) => names.filter((n) => !env[n]);
+const missingFile = (name) => (env[name] && !readIfExists(env[name]) ? [`${name} → archivo no encontrado: ${env[name]}`] : []);
+config.apple.missing = [
+  ...missingEnv('APPLE_PASS_TYPE_ID', 'APPLE_TEAM_ID', 'APPLE_WWDR_CERT', 'APPLE_SIGNER_CERT', 'APPLE_SIGNER_KEY'),
+  ...missingFile('APPLE_WWDR_CERT'), ...missingFile('APPLE_SIGNER_CERT'), ...missingFile('APPLE_SIGNER_KEY'),
+];
+config.google.missing = [
+  ...missingEnv('GOOGLE_ISSUER_ID', 'GOOGLE_SERVICE_ACCOUNT_FILE'),
+  ...missingFile('GOOGLE_SERVICE_ACCOUNT_FILE'),
+  ...(saRaw && !serviceAccount?.private_key ? ['GOOGLE_SERVICE_ACCOUNT_FILE → JSON inválido o sin private_key'] : []),
+];
+
 export function logConfigSummary() {
   console.log(`[config] PUBLIC_URL = ${config.publicUrl}`);
   console.log(`[config] Apple Wallet:  ${config.apple.enabled ? (config.apple.demo ? 'ACTIVO en DEMO (certificados de prueba: el iPhone no aceptará el pase)' : 'ACTIVO') : 'modo simulado (faltan certificados)'}`);

@@ -40,7 +40,12 @@ const apiLimiter = rateLimit({ windowMs: 60 * 1000, limit: 300, standardHeaders:
 
 // ───────────── Rutas ─────────────
 app.get('/api/health', (_req, res) =>
-  res.json({ ok: true, apple: config.apple.enabled, google: config.google.enabled }),
+  res.json({
+    ok: true,
+    apple: config.apple.enabled,
+    google: config.google.enabled,
+    missing: { apple: config.apple.missing, google: config.google.missing },
+  }),
 );
 
 app.use('/api/business/create', createLimiter);
