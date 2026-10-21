@@ -1,0 +1,21 @@
+{
+  "name": "walletpass-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SaaS de tarjetas de lealtad para Apple Wallet y Google Wallet",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,magenta \"npm run dev -w server\" \"npm run dev -w client\"",
+    "build": "npm run build -w client",
+    "start": "npm start -w server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

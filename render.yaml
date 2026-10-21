@@ -1,0 +1,34 @@
+# Despliegue en Render (plan gratis). Ver README → "Subir a Render".
+# ⚠ En el plan gratis el disco es efímero: server/data se borra al reiniciar
+#   o cuando el servicio se duerme (15 min sin visitas).
+services:
+  - type: web
+    name: walletpass-studio
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      # PUBLIC_URL se toma de RENDER_EXTERNAL_URL automáticamente
+      - key: GOOGLE_ISSUER_ID
+        sync: false
+      - key: GOOGLE_COUNTRY_CODE
+        value: MX
+      # Archivos secretos (Render → Environment → Secret Files) en /etc/secrets/
+      - key: GOOGLE_SERVICE_ACCOUNT_FILE
+        value: /etc/secrets/google-service-account.json
+      - key: APPLE_PASS_TYPE_ID
+        value: pass.com.tunegocio.loyalty
+      - key: APPLE_TEAM_ID
+        value: ABCDE12345
+      - key: APPLE_WWDR_CERT
+        value: /etc/secrets/wwdr.pem
+      - key: APPLE_SIGNER_CERT
+        value: /etc/secrets/signerCert.pem
+      - key: APPLE_SIGNER_KEY
+        value: /etc/secrets/signerKey.pem

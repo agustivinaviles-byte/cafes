@@ -1,0 +1,24 @@
+{
+  "name": "walletpass-studio-server",
+  "version": "1.0.0",
+  "description": "API de WalletPass Studio: genera pases de lealtad para Apple Wallet (.pkpass) y Google Wallet",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "check": "node --check src/server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
+    "passkit-generator": "^3.3.1",
+    "sharp": "^0.34.2"
+  }
+}
