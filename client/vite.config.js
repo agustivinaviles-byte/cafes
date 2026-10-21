@@ -7,6 +7,8 @@ const backend = 'http://localhost:3001';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // /assets lo usa el servidor para los logos de las tarjetas
+  build: { assetsDir: 'static' },
   server: {
     port: 5173,
     host: true, // accesible desde tu celular en la misma red
