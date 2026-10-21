@@ -51,11 +51,21 @@ export const config = {
   clientDist: path.resolve(SERVER_ROOT, '../client/dist'),
 };
 
+/**
+ * Un secreto puede venir como archivo (NAME = ruta) o como variable en
+ * base64 (NAME_B64), útil en hostings donde subir archivos es incómodo.
+ */
+function readSecret(name) {
+  const b64 = env[`${name}_B64`];
+  if (b64) return Buffer.from(b64.replace(/\s+/g, ''), 'base64');
+  return readIfExists(env[name]);
+}
+
 // ───────────── Apple ─────────────
 const appleCerts = {
-  wwdr: readIfExists(env.APPLE_WWDR_CERT),
-  signerCert: readIfExists(env.APPLE_SIGNER_CERT),
-  signerKey: readIfExists(env.APPLE_SIGNER_KEY),
+  wwdr: readSecret('APPLE_WWDR_CERT'),
+  signerCert: readSecret('APPLE_SIGNER_CERT'),
+  signerKey: readSecret('APPLE_SIGNER_KEY'),
   signerKeyPassphrase: env.APPLE_SIGNER_KEY_PASSPHRASE || undefined,
 };
 
@@ -87,7 +97,7 @@ function isDemoCert(pem) {
 
 // ───────────── Google ─────────────
 let serviceAccount = null;
-const saRaw = readIfExists(env.GOOGLE_SERVICE_ACCOUNT_FILE);
+const saRaw = readSecret('GOOGLE_SERVICE_ACCOUNT_FILE');
 if (saRaw) {
   try {
     serviceAccount = JSON.parse(saRaw.toString('utf8'));
@@ -107,8 +117,9 @@ config.google = {
  * Qué falta para activar cada plataforma (solo nombres, nunca valores),
  * para diagnosticar el hosting desde /api/health.
  */
-const missingEnv = (...names) => names.filter((n) => !env[n]);
-const missingFile = (name) => (env[name] && !readIfExists(env[name]) ? [`${name} → archivo no encontrado: ${env[name]}`] : []);
+const missingEnv = (...names) => names.filter((n) => !env[n] && !env[`${n}_B64`]);
+const missingFile = (name) =>
+  (env[name] && !env[`${name}_B64`] && !readIfExists(env[name]) ? [`${name} → archivo no encontrado: ${env[name]}`] : []);
 config.apple.missing = [
   ...missingEnv('APPLE_PASS_TYPE_ID', 'APPLE_TEAM_ID', 'APPLE_WWDR_CERT', 'APPLE_SIGNER_CERT', 'APPLE_SIGNER_KEY'),
   ...missingFile('APPLE_WWDR_CERT'), ...missingFile('APPLE_SIGNER_CERT'), ...missingFile('APPLE_SIGNER_KEY'),
