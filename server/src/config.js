@@ -15,11 +15,25 @@ export const SERVER_ROOT = path.resolve(__dirname, '..');
 /** Resuelve rutas relativas respecto a /server */
 const resolvePath = (p) => (p ? path.resolve(SERVER_ROOT, p) : null);
 
+// Render copia los Secret Files a /etc/secrets y también a la raíz del proyecto
+const SECRET_DIRS = ['/etc/secrets', path.resolve(SERVER_ROOT, '..'), SERVER_ROOT];
+
 /** Lee un archivo si existe; si no, devuelve null (sin lanzar). */
 function readIfExists(p) {
   const abs = resolvePath(p);
-  if (!abs || !fs.existsSync(abs)) return null;
-  return fs.readFileSync(abs);
+  if (!abs) return null;
+  const candidates = [abs, ...SECRET_DIRS.map((d) => path.join(d, path.basename(abs)))];
+  const found = candidates.find((c) => fs.existsSync(c) && fs.statSync(c).isFile());
+  return found ? fs.readFileSync(found) : null;
+}
+
+/** Nombres (no contenido) de los archivos en /etc/secrets, para diagnóstico. */
+function listSecretFiles() {
+  try {
+    return fs.readdirSync('/etc/secrets');
+  } catch {
+    return null;
+  }
 }
 
 const env = process.env;
@@ -99,6 +113,7 @@ config.apple.missing = [
   ...missingEnv('APPLE_PASS_TYPE_ID', 'APPLE_TEAM_ID', 'APPLE_WWDR_CERT', 'APPLE_SIGNER_CERT', 'APPLE_SIGNER_KEY'),
   ...missingFile('APPLE_WWDR_CERT'), ...missingFile('APPLE_SIGNER_CERT'), ...missingFile('APPLE_SIGNER_KEY'),
 ];
+config.secretFiles = listSecretFiles();
 config.google.missing = [
   ...missingEnv('GOOGLE_ISSUER_ID', 'GOOGLE_SERVICE_ACCOUNT_FILE'),
   ...missingFile('GOOGLE_SERVICE_ACCOUNT_FILE'),

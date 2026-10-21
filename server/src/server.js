@@ -45,6 +45,7 @@ app.get('/api/health', (_req, res) =>
     apple: config.apple.enabled,
     google: config.google.enabled,
     missing: { apple: config.apple.missing, google: config.google.missing },
+    secretFiles: config.secretFiles,
   }),
 );
 
